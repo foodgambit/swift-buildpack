@@ -204,6 +204,7 @@ swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/
 #status "CONTENTS of .build"
 #fi
 
+ls -la -R $BUILD_DIR/.build
 
 # ----------------------------------------------------------------------------- #
 # Copy Packages folder from BUILD_DIR to CACHE_DIR                              #
