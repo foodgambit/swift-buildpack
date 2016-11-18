@@ -158,9 +158,11 @@ restore_cache() {
 }
 restore_cache
 
+if [ -d $BUILD_DIR/Packages ]; then
 status "CONTENTS of PACKAGES"
 ls -la -R $BUILD_DIR/Packages
 status "CONTENTS of PACKAGES"
+fi
 
 # ----------------------------------------------------------------------------- #
 # Parse Package.swift to determine any required system level dependencies.      #
