@@ -33,6 +33,7 @@ CLANG_VERSION=3.8.0
 BP_DIR=$(cd $(dirname $0); cd ..; pwd)
 BUILDPACK_PATH=$BP_DIR source $BP_DIR/compile-extensions/lib/common
 PACKAGES_DIR="Packages"
+SWIFT_PM_BUILD_DIR=".build"
 # If leveraging CACHE_DIR for tar files, then we'd need CACHED_ITEMS
 #CACHED_ITEMS=()
 
@@ -150,7 +151,7 @@ restore_cache() {
   local cache_status="$(get_cache_status)"
   if [ "$cache_status" == "valid" ]; then
     status "Loading from cache:"
-    restore_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$PACKAGES_DIR"
+    restore_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$PACKAGES_DIR" "$SWIFT_PM_BUILD_DIR"
   else
     status "Skipping cache restore ($cache_status)"
   fi
@@ -197,7 +198,7 @@ fi
 
 swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
 
-# These should be statically linked, seems a Swift bug.
+# These should be statically linked, seems to be a Swift bug.
 status "Copying dynamic libraries"
 mkdir -p $BUILD_DIR/.swift-lib
 cp $SWIFT_PATH/usr/lib/swift/linux/*.so $BUILD_DIR/.swift-lib
@@ -214,7 +215,7 @@ rm -rf $BUILD_DIR/.build
 # Copy Packages folder from BUILD_DIR to CACHE_DIR                              #
 # ----------------------------------------------------------------------------- #
 cache_build() {
-  status "Clearing previous swift cache"
+  status "Clearing previous 'swift' cache"
   clear_cache
   # cf set-env swift-helloworld SWIFT_PACKAGES_CACHE true
   # cf restage swift-helloworld
@@ -222,7 +223,7 @@ cache_build() {
     status "Skipping cache save (disabled by config)"
   else
     status "Saving cache (default):"
-    save_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$PACKAGES_DIR"
+    save_cache_directories "$BUILD_DIR" "$CACHE_DIR" "$PACKAGES_DIR" "$SWIFT_PM_BUILD_DIR"
   fi
   save_signatures
 }
