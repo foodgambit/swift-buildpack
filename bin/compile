@@ -190,19 +190,31 @@ else
   SWIFT_BUILD_OPTIONS=""
 fi
 
+if [ -d $BUILD_DIR/Packages ]; then
+status "BEFORE CONTENTS of PACKAGES"
+ls -la -R $BUILD_DIR/Packages
+status "BEFORE CONTENTS of PACKAGES"
+fi
+
+if [ -d $BUILD_DIR/.build ]; then
+status "BEFORE CONTENTS of .build"
+ls -la -R $BUILD_DIR/.build
+status "BEFORE CONTENTS of .build"
+fi
+
 swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
 
-#if [ -d $BUILD_DIR/Packages ]; then
-#status "CONTENTS of PACKAGES"
-#ls -la -R $BUILD_DIR/Packages
-#status "CONTENTS of PACKAGES"
-#fi
+if [ -d $BUILD_DIR/Packages ]; then
+status "AFTER CONTENTS of PACKAGES"
+ls -la -R $BUILD_DIR/Packages
+status "AFTER CONTENTS of PACKAGES"
+fi
 
-#if [ -d $BUILD_DIR/.build ]; then
-#status "CONTENTS of .build"
-#ls -la -R $BUILD_DIR/.build
-#status "CONTENTS of .build"
-#fi
+if [ -d $BUILD_DIR/.build ]; then
+status "AFTER CONTENTS of .build"
+ls -la -R $BUILD_DIR/.build
+status "AFTER CONTENTS of .build"
+fi
 
 ls -la -R $BUILD_DIR/.build
 
