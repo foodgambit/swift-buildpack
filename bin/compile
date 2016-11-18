@@ -204,16 +204,6 @@ fi
 
 swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
 
-# These should be statically linked, seems to be a Swift bug.
-status "Copying dynamic libraries"
-mkdir -p $BUILD_DIR/.swift-lib
-cp $SWIFT_PATH/usr/lib/swift/linux/*.so $BUILD_DIR/.swift-lib
-cp $BUILD_DIR/.build/release/*.so $BUILD_DIR/.swift-lib 2>/dev/null || true
-
-status "Copying binaries to 'bin'"
-mkdir -p $BUILD_DIR/.swift-bin
-find $BUILD_DIR/.build/release -type f -perm /a+x -exec cp {} $BUILD_DIR/.swift-bin \;
-
 # ----------------------------------------------------------------------------- #
 # Copy Packages folder from BUILD_DIR to CACHE_DIR                              #
 # ----------------------------------------------------------------------------- #
@@ -231,6 +221,19 @@ cache_build() {
   save_signatures
 }
 cache_build
+
+# ----------------------------------------------------------------------------- #
+# Copy libraries and binaries; clean up swift build dir                         #
+# ----------------------------------------------------------------------------- #
+# These should be statically linked, seems to be a Swift bug.
+status "Copying dynamic libraries"
+mkdir -p $BUILD_DIR/.swift-lib
+cp $SWIFT_PATH/usr/lib/swift/linux/*.so $BUILD_DIR/.swift-lib
+cp $BUILD_DIR/.build/release/*.so $BUILD_DIR/.swift-lib 2>/dev/null || true
+
+status "Copying binaries to 'bin'"
+mkdir -p $BUILD_DIR/.swift-bin
+find $BUILD_DIR/.build/release -type f -perm /a+x -exec cp {} $BUILD_DIR/.swift-bin \;
 
 status "Cleaning up build files"
 rm -rf $BUILD_DIR/.build
