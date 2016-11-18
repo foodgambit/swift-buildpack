@@ -205,7 +205,7 @@ fi
 status "BEFORE"
 ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/HeliumLogger
 if [ -d $BUILD_DIR/.build ]; then
-ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/debug/HeliumLogger.build
+ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release/HeliumLogger.build
 fi
 status "BEFORE"
 
