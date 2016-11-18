@@ -259,6 +259,13 @@ cache_build() {
 }
 cache_build
 
+
+restore_cache
+
+status "TEST2"
+swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
+status "TEST2"
+
 # ----------------------------------------------------------------------------- #
 # Copy libraries and binaries; clean up swift build dir                         #
 # ----------------------------------------------------------------------------- #
