@@ -30,19 +30,18 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 DEFAULT_SWIFT_VERSION=3.0.1
 CLANG_VERSION=3.8.0
-compile_buildpack_dir=$(cd $(dirname $0); cd ..; pwd)
-compile_buildpack_bin=$compile_buildpack_dir/bin
-BUILDPACK_PATH=$compile_buildpack_dir source $compile_buildpack_dir/compile-extensions/lib/common
+BP_DIR=$(cd $(dirname $0); cd ..; pwd)
+BUILDPACK_PATH=$BP_DIR source $BP_DIR/compile-extensions/lib/common
 PACKAGES_DIR="Packages"
 # If leveraging CACHE_DIR for tar files, then we'd need CACHED_ITEMS
 #CACHED_ITEMS=()
 
 # Check environment support
-$compile_buildpack_dir/compile-extensions/bin/check_stack_support
+$BP_DIR/compile-extensions/bin/check_stack_support
 # Load convenience functions like status(), echo(), and indent()
-source $compile_buildpack_dir/lib/utils.sh
+source $BP_DIR/lib/utils.sh
 # Load caching functions
-source ${compile_buildpack_dir}/lib/cache.sh
+source ${BP_DIR}/lib/cache.sh
 
 # Log default Swift version
 status "Default supported Swift version is $DEFAULT_SWIFT_VERSION"
@@ -91,7 +90,7 @@ export PKG_CONFIG_PATH="$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu/pkgconfig:$BUIL
 # Copy pre-cached system level dependencies for Kitura                          #
 # ----------------------------------------------------------------------------- #
 status "Copying deb files to installation folder..."
-cp $compile_buildpack_dir/binary-dependencies/*.deb $APT_CACHE_DIR/archives
+cp $BP_DIR/binary-dependencies/*.deb $APT_CACHE_DIR/archives
 
 # ----------------------------------------------------------------------------- #
 # Download system level dependencies for Kitura                                 #
@@ -239,7 +238,7 @@ rm -rf $CACHE_DIR/$SWIFT_NAME_VERSION
 rm -rf $CACHE_DIR/$CLANG_NAME_VERSION
 rm -rf $CACHE_DIR/"$SWIFT_NAME_VERSION.tar.gz"
 rm -rf $CACHE_DIR/"$CLANG_NAME_VERSION.tar.xz"
-for DEB in $(ls -1 $compile_buildpack_dir/binary-dependencies/*.deb); do
+for DEB in $(ls -1 $BP_DIR/binary-dependencies/*.deb); do
   rm $APT_CACHE_DIR/archives/$(basename $DEB)
 done
 
