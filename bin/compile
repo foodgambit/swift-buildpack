@@ -204,7 +204,9 @@ fi
 
 status "BEFORE"
 ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/HeliumLogger
+if [ -d $BUILD_DIR/.build ]; then
 ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/debug/HeliumLogger.build
+fi
 status "BEFORE"
 
 swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
