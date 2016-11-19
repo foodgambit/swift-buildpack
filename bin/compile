@@ -258,7 +258,8 @@ cache_build() {
   save_signatures
 }
 cache_build
-
+rm -rf $BUILD_DIR/.build
+rm -rf $BUILD_DIR/Packages
 
 restore_cache
 
