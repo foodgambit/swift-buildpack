@@ -267,9 +267,6 @@ rm -rf $BUILD_DIR/Packages
 
 restore_cache
 
-status "TEST2"
-swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
-status "TEST2"
 
 status "AFTER2"
 ls -la $BUILD_DIR/$PACKAGES_DIR
@@ -282,6 +279,10 @@ ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/Sources/
 #ls -la -R $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 status "AFTER2"
+
+status "TEST2"
+swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
+status "TEST2"
 
 ls -la $BUILD_DIR/$PACKAGES_DIR
 ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR
