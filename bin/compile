@@ -230,7 +230,7 @@ status "AFTER"
 status "TEST"
 find $BUILD_DIR/$PACKAGES_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
 status "-----------------------------------------WAHT?!?!?!!?"
-find $BUILD_DIR/$SWIFT_PM_BUILD_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
+find $BUILD_DIR/$SWIFT_PM_BUILD_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort | cut -d: -f2- | head
 swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/usr/include -Xlinker -L$BUILD_DIR/.apt/usr/lib -Xlinker -L$BUILD_DIR/.apt/usr/lib/x86_64-linux-gnu -Xlinker -rpath=$BUILD_DIR/.apt/usr/lib | indent
 status "TEST"
 
@@ -284,7 +284,7 @@ ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 
 find $BUILD_DIR/$PACKAGES_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
 status "-----------------------------------------WAHT?!?!?!!?"
-find $BUILD_DIR/$SWIFT_PM_BUILD_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
+find $BUILD_DIR/$SWIFT_PM_BUILD_DIR -type f -exec stat --format '%Y :%y %n' "{}" \; | sort | cut -d: -f2- | head
 status "AFTER2"
 
 status "TEST2"
