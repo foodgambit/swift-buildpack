@@ -278,6 +278,12 @@ ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/Sources/
 #ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0/Sources/LoggerAPI
 #ls -la -R $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
+
+cd $BUILD_DIR/$PACKAGES_DIR
+find $1 -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
+cd $BUILD_DIR/$SWIFT_PM_BUILD_DIR
+find $1 -type f -exec stat --format '%Y :%y %n' "{}" \; | sort -nr | cut -d: -f2- | head
+cd $BUILD_DIR
 status "AFTER2"
 
 status "TEST2"
