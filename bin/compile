@@ -203,9 +203,13 @@ fi
 #fi
 
 status "BEFORE"
-ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/HeliumLogger
+ls -la $BUILD_DIR/$PACKAGES_DIR
+ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/
+ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/Sources/
+
+#ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/HeliumLogger
 if [ -d $BUILD_DIR/.build ]; then
-ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release/HeliumLogger.build
+ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 fi
 status "BEFORE"
 
@@ -213,14 +217,14 @@ swift build --configuration release $SWIFT_BUILD_OPTIONS -Xcc -I$BUILD_DIR/.apt/
 
 status "AFTER"
 ls -la $BUILD_DIR/$PACKAGES_DIR
-ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/
-ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/
-ls -la $BUILD_DIR/$PACKAGES_DIR/HeliumLogger-1.1.0/Sources/HeliumLogger
-ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0
-ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0/Sources
-ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0/Sources/LoggerAPI
+ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/
+ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/Sources/
+#ls -la $BUILD_DIR/$PACKAGES_DIR/Socket-0.11.40/Sources/SwiftyJSON-15.0.1
+#ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0
+#ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0/Sources
+#ls -la $BUILD_DIR/$PACKAGES_DIR/LoggerAPI-1.1.0/Sources/LoggerAPI
 #ls -la -R $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
-ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release/HeliumLogger.build
+ls -la $BUILD_DIR/$SWIFT_PM_BUILD_DIR/release
 status "AFTER"
 
 status "TEST"
