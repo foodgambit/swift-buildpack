@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# IBM SDK for Node.js Buildpack
+# Copyright 2014 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# If a kill fails, do not exit the script. Assume that process has exited prior to this script.
+# This will handle cases where the app crashes ahead of time, or we try to kill two of the same thing.
+set +e
+
+app_management=$(dirname "$0")/..
+
+# Recursively delete pid and all children of pid
+function kill_process() {
+  local parent_pid=$1
+  local signal=${2}
+  kill -stop ${parent_pid}
+  for child in $(ps -o pid --no-headers --ppid ${parent_pid}); do
+    kill_process ${child} ${signal}
+  done
+  echo "kill $signal $parent_pid"
+  kill ${signal} ${parent_pid}
+}
+
+if [[ "${ENABLE_BLUEMIX_DEV_MODE,,}" == "true" ]]; then
+  node_pid=$(cat ${HOME}/runtime.pid)
+  kill_process ${node_pid} -9
+elif [[ "${BLUEMIX_APP_MGMT_ENABLE}" != "" ]]; then
+  if ${app_management}/handlers/query-hc/run ; then
+    # When HC is active, we need to find and kill the child process created by the node-hc command
+    pkill -f "lib/node_modules/healthcenter/launcher"
+    # They changed directory structure, so need to check if appmetrics launcher exists
+    pkill -f "lib/node_modules/appmetrics/launcher"
+  fi
+  node_pid=$(cat ${HOME}/runtime.pid)
+  if [ ! -z "$node_pid" ]; then
+    kill_process $node_pid -9
+  fi
+else
+  killall node -s SIGINT
+fi

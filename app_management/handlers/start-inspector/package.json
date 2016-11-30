@@ -1,0 +1,10 @@
+{
+  "name": "inspector",
+  "version": "0.0.0",
+  "description": "",
+  "private": true,
+  "dependencies": {
+    "node-inspector": "~0.12.8"
+  }
+}
+

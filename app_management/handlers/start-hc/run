@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+# IBM SDK for Node.js Buildpack
+# Copyright 2015 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Starts the health center handler and a Mosquitto broker as Health Center requires an MQTT broker.
+# Usage:
+#   start-hc/run
+
+# Fail Fast
+set -e
+
+app_management_dir="$(cd `dirname $0`/../.. && pwd)"
+handler="$(cd `dirname $0` && pwd)"
+pidfile=healthcenter.pid
+
+################################################################################################
+# Health Center is only supported for IBM SDK NodeJS versions that include HealthCenter node.
+# Exit the handler if Health Center does not exist as the command will be modified to be node-hc.
+################################################################################################
+function exit_if_no_nodehc {
+  # HealthCenter Node relative to the app directory
+  local node_file="$app_management_dir/../vendor/node/lib/node_modules/healthcenter/healthcenter.node"
+  local alt_node_file="$app_management_dir/../vendor/node/lib/node_modules/appmetrics/appmetrics.node"
+
+  if [ ! -e "${node_file}" ] && [ ! -e "${alt_node_file}" ]; then
+    echo "A version of IBM SDK NodeJS including HealthCenter could not be found based on ${node_file} " \
+         "or ${alt_node_file}. The HealthCenter app management handler will not be executed."
+    exit 1
+  fi
+}
+
+################################################################################################
+# Create the MQTT configuration file for the Mosquitto broker.
+################################################################################################
+function create_mqtt_configuration {
+  # qualified configuration file
+  local config_file=$1
+
+  # entries in the config file
+  local port=$2
+  local log_dest=$3
+
+  if [ -e "${config_file}" ]; then
+    echo "${config_file} already exists, its contents will be overwritten"
+    cat /dev/null > "${config_file}"
+  fi
+
+  # broker's listening port
+  echo "port $port" >> "${config_file}"
+
+  # broker's log location and data
+  echo "log_dest file ${log_dest}" >> "${config_file}"
+  echo 'log_timestamp true' >> "${config_file}"
+
+  # pid file will be used by stop handler
+  echo "pid_file ${mosquitto_pid}" >> "${config_file}"
+}
+
+################################################################################################
+# Create HealthCenter properties that are required for monitoring of a Bluemix application.
+################################################################################################
+function configure_hc_properties {
+  hc_properties=$1
+  backup_dir=$2
+  port=$3
+  app_name=$4
+
+  # Required configuration for healthcenter client to monitor a Bluemix application
+  mqtt_enabled="com.ibm.diagnostics.healthcenter.mqtt=on"
+  mqtt_host="com.ibm.diagnostics.healthcenter.mqtt.broker.host=localhost"
+  mqtt_port="com.ibm.diagnostics.healthcenter.mqtt.broker.port=$port"
+  mqtt_app="com.ibm.diagnostics.healthcenter.mqtt.application.id=$app_name"
+
+  if [ -e "$hc_properties" ]; then
+    # if a healthcenter properties file exists in the app directory, make a backup of it
+    mkdir -p "$backup_dir"
+    cp $hc_properties "$backup_dir"
+    update_hc_properties $hc_properties $mqtt_enabled $mqtt_host $mqtt_port "$mqtt_app"
+  else 
+    create_new_hc_properties $hc_properties $mqtt_enabled $mqtt_host $mqtt_port "$mqtt_app"
+  fi
+}
+
+################################################################################################
+# Create a health center configuration file with key value property entries passed in as arguments
+################################################################################################
+function create_new_hc_properties {
+  hc_properties=$1
+  
+  # clear the properties and append all the options
+  cat /dev/null > "$hc_properties"
+
+  for bm_mqtt_line in ${@:2}
+  do
+    echo "$bm_mqtt_line" >> "$hc_properties"
+  done 
+}
+
+################################################################################################
+# Update an existing health center configuration file with options that are provided as arguments
+# to this function. If the option already exists in the configuration file, it will be updated.
+# Options that do not yet exist in the configuration file will be appended to.
+################################################################################################
+function update_hc_properties {
+  hc_properties=$1
+
+  # the second parameter and onwards are healthcenter require configuration properties
+  for bm_mqtt_line in ${@:2}
+  do
+    # strip off the string after the equal = symbol of the option line and escape the period . symbol
+    mqtt_option_key=`echo $bm_mqtt_line | sed -e 's/\(..*=\).*$/\1/' -e 's/\./\\./g'` 
+
+    # search for the option key in the healthcenter properties, and update it with the bluemix values
+    sed -i "s/^$mqtt_option_key..*$/$bm_mqtt_line/" $hc_properties
+
+    # make sure that the option exists (uncommented) in the properties file.  
+    # if it does not exist, append the option to the file
+    grep -qro "^$bm_mqtt_line" $hc_properties
+    if [ "$?" != 0 ]; then
+      echo $bm_mqtt_line >> $hc_properties
+    fi
+  done
+}
+
+################################################################################################
+# Add a proxy entry for Health Center to the app management proxy configuration.
+################################################################################################
+function create_proxy_entry {
+  local key=$1
+  local backend_port=$2
+
+  config_entry="{\"type\": \"tunnel\", \"backend\": \"127.0.0.1:${backend_port}\", \"host\": \"*\", \"uri_prefix\": \"bluemix-tunnel/${key}\"}"
+  echo "Adding proxy entry with: ${config_entry}"
+  "${app_management_dir}/scripts/add_proxy_entry" "${key}" "${config_entry}"
+}
+
+exit_if_no_nodehc
+echo Setting up Health Center as an app management handler
+
+# Mosquitto configurations
+mosquitto_dir="${app_management_dir}/mosquitto"
+mosquitto_port=$(${app_management_dir}/utils/handler_utils.sh 'hc' 'port' 1883)
+mosquitto_log="${app_management_dir}/../../logs/mosquitto.log"
+mosquitto_pid="${handler}/healthcenter.pid"  # must be the same as the stop-hc/run
+
+# proxy agent configuration
+create_proxy_entry hc $mosquitto_port
+
+# mqtt configuration
+create_mqtt_configuration "${mosquitto_dir}/mosquitto.conf" "$mosquitto_port" "$mosquitto_log" "$mosquitto_pid"
+
+# healthcenter configuration
+# VCAP_APPLICATION contains the application name as "application_id":"appname" where appname would be the application name.
+app_name=`echo $VCAP_APPLICATION | sed -e 's/^..*"application_name":"//' -e 's/","..*$//'`
+configure_hc_properties healthcenter.properties "$handler/backup" $mosquitto_port "$app_name"
+configure_hc_properties appmetrics.properties "$handler/backup" $mosquitto_port "$app_name"
+
+# Start mosquitto in daemon mode
+echo Starting Health Center...
+"${mosquitto_dir}/bin/mosquitto" -c "${mosquitto_dir}/mosquitto.conf" -d
+
+# Indicate that handler has been started
+touch ${handler}/.hc

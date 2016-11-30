@@ -1,6 +1,6 @@
-# Encoding: utf-8
+#!/usr/bin/env bash
 # IBM SDK for Node.js Buildpack
-# Copyright 2014-2015 the original author or authors.
+# Copyright 2014 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +14,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class BootScriptFinder
-  def initialize(app_dir)
-    @app_dir = app_dir
-  end
+app_management_dir=$(cd `dirname $0`/../.. && pwd)
+cd $app_management_dir
 
-  def find_boot_script
-    procfile_file = @app_dir + 'Procfile'
-    start_cmd = ""
+pid=$(cat ${app_management_dir}/handlers/start-inspector/inspector.pid)
+kill -9 ${pid}
 
-    if (File.exist?(procfile_file))
-      procfile_content = ''
-      File.open(procfile_file,'r') do |file|
-        while line = file.gets
-          procfile_content += line
-        end
-      end
-      if (matched = /web:\s+(.+)/.match(procfile_content))
-        start_cmd = matched[1]
-      end
-    end
+# Reset the executable
+export NODE_EXECUTABLE=node
 
-    return start_cmd
-  end
-
-end
+for key in inspector procotol; do
+    ${app_management_dir}/scripts/remove_proxy_entry "$key"
+done

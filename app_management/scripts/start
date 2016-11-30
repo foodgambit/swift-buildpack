@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# IBM SDK for Node.js Buildpack
+# Copyright 2014 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+function set_node_executable() {
+  if ! NODE=$(${app_management_dir}/utils/get-node-executable ${BREAK}); then
+    echo "Failed to determine NODE_EXECUTABLE" >&2
+    exit 2
+  fi
+  export NODE_EXECUTABLE="${NODE}"
+}
+
+export PORT="$1"
+if [ -n "$VCAP_APP_PORT" ]; then
+  export VCAP_APP_PORT=$1
+fi
+BREAK="${2:-no-break}" # This form sets BREAK to "no-break" if $2 is empty
+
+app_dir=$(cd `dirname $0`/../.. && pwd)
+cd $app_dir
+app_management_dir=$(cd .app-management && pwd)
+
+set_node_executable
+echo "Starting app with '${NODE_EXECUTABLE} ${NODE_OPTS} ${BOOT_SCRIPT} ${NODE_ARGS}'"
+${NODE_EXECUTABLE} ${NODE_OPTS} ${BOOT_SCRIPT} ${NODE_ARGS} &
+
+pid=$!
+# write the PID to a file
+echo "${pid}" > $HOME/runtime.pid
+wait $pid

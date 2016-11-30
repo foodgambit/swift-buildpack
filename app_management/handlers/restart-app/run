@@ -1,6 +1,6 @@
-# Encoding: utf-8
+#!/usr/bin/env bash
 # IBM SDK for Node.js Buildpack
-# Copyright 2014-2015 the original author or authors.
+# Copyright 2014 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class BootScriptFinder
-  def initialize(app_dir)
-    @app_dir = app_dir
-  end
+# Sets the NODE_EXECUTABLE environment variable and restarts the app.
+#
+# Usage:
+# run PORT [break|no-break]
+#
+# If the 2nd argument is omitted, no-break is assumed.
+#
+app_management_dir=$(cd `dirname $0`/../.. && pwd)
+cd $app_management_dir
 
-  def find_boot_script
-    procfile_file = @app_dir + 'Procfile'
-    start_cmd = ""
+APP_PORT=$1
+BREAK="${2:-no-break}" # This form sets BREAK to "no-break" if $2 is empty
 
-    if (File.exist?(procfile_file))
-      procfile_content = ''
-      File.open(procfile_file,'r') do |file|
-        while line = file.gets
-          procfile_content += line
-        end
-      end
-      if (matched = /web:\s+(.+)/.match(procfile_content))
-        start_cmd = matched[1]
-      end
-    end
+if [ -z "${APP_PORT}" ]; then
+  echo "Port arg must be provided to handler to restart application" >&2
+  exit 1
+fi
 
-    return start_cmd
-  end
-
-end
+scripts/stop
+scripts/start ${APP_PORT} $BREAK

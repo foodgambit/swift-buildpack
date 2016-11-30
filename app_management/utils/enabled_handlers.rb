@@ -1,6 +1,6 @@
-# Encoding: utf-8
+#!/usr/bin/env ruby
 # IBM SDK for Node.js Buildpack
-# Copyright 2014-2015 the original author or authors.
+# Copyright 2014 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class BootScriptFinder
-  def initialize(app_dir)
-    @app_dir = app_dir
-  end
+require 'utils/simple_logger'
 
-  def find_boot_script
-    procfile_file = @app_dir + 'Procfile'
-    start_cmd = ""
+module Utils
 
-    if (File.exist?(procfile_file))
-      procfile_content = ''
-      File.open(procfile_file,'r') do |file|
-        while line = file.gets
-          procfile_content += line
-        end
-      end
-      if (matched = /web:\s+(.+)/.match(procfile_content))
-        start_cmd = matched[1]
-      end
+  # Returns the list of enabled handlers set in the environment
+  def Utils.get_enabled_handlers
+    if ENV['ENABLE_BLUEMIX_DEV_MODE'] == 'TRUE' || ENV['ENABLE_BLUEMIX_DEV_MODE'] == 'true'
+      %w{devconsole inspector shell}
+    elsif !ENV['BLUEMIX_APP_MGMT_ENABLE'].nil?
+      ENV['BLUEMIX_APP_MGMT_ENABLE'].downcase.split('+').map(&:strip)
+    else
+      nil
     end
-
-    return start_cmd
   end
 
 end

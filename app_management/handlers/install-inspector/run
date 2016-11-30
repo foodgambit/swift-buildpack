@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Usage: install                 Install if necessary.
+handler_dir=$(cd `dirname $0` && pwd)/../start-inspector
+install_helper=${handler_dir}/../../utils/install_helper
+
+${install_helper} "--dir=${handler_dir}" "--label=inspector" "$1"

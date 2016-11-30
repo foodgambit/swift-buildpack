@@ -61,7 +61,7 @@ function updateStartCommands() {
   if test -f ${BUILD_DIR}/Procfile; then
     local start_command=$(sed -n -e '/^web:/p' ${BUILD_DIR}/Procfile | sed 's/^web: //')
     sed -i s#%COMMAND%#"${start_command}"# "${BUILD_DIR}"/.app-management/scripts/start
-  
+
     # Use initial_startup to start application
     sed -i 's#web:.*#web: ./vendor/initial_startup.rb#' $BUILD_DIR/Procfile
   else
@@ -194,16 +194,16 @@ function installAppManagement() {
   boot_js_file=$($BP_DIR/bin/find_boot_script $BUILD_DIR)
 
   if [ "$boot_js_file" == "" ]; then
-    info "WARN: App Management cannot be installed because the start script cannot be found."
-    info "To install App Management utilities, specify your 'node' start script in 'package.json' or 'Procfile'."
+    info "WARN: App Management cannot be installed because the start command cannot be found."
+    info "To install App Management utilities, specify a start command for your Swift application in 'Procfile'."
   else
-    if test -f $BUILD_DIR/package.json; then
-    dependencies=$(cat $BUILD_DIR/package.json | $BP_DIR/vendor/jq -r .dependencies)
-      if [[ $dependencies == *"bunyan"* ]] || [[ $dependencies == *"log4js"* ]] || [[ $dependencies == *"ibmbluemix"* ]]; then
-        # Install RMU utilities
-        installBMCmodule
-      fi
-    fi
+  #  if test -f $BUILD_DIR/package.json; then
+  #  dependencies=$(cat $BUILD_DIR/package.json | $BP_DIR/vendor/jq -r .dependencies)
+  #    if [[ $dependencies == *"bunyan"* ]] || [[ $dependencies == *"log4js"* ]] || [[ $dependencies == *"ibmbluemix"* ]]; then
+  #      # Install RMU utilities
+  #      installBMCmodule
+  #    fi
+  #  fi
 
     # Install Dev mode utilities
     installAgent && setupHandlerBinaries && updateStartCommands && generateAppMgmtInfo

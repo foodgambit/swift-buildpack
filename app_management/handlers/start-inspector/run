@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# IBM SDK for Node.js Buildpack
+# Copyright 2014 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Launches Node Inspector and restarts the runtime in debug mode.
+#
+# Usage: run
+#
+
+app_management_dir=$(cd `dirname $0`/../.. && pwd)
+handler_dir=$(cd `dirname $0` && pwd)
+bp_dir=$(cd `dirname $0`/../../.. && pwd)
+pidfile="${handler_dir}/inspector.pid"
+
+source $app_management_dir/utils/node_utils.sh
+
+# We register 2 proxy URI prefixes: one at `/bluemix-debug/inspector/*` for the majority of
+# the Node Inspector UI, and a second to catch the errant XHR call to `/bluemix-debug/protocol.json`
+# made by the UI.
+declare -A proxy_entries=(
+    ['inspector']="bluemix-debug/inspector"
+    ['protocol']="bluemix-debug/protocol.json"
+)
+
+add_proxy_entries() {
+    for key in "${!proxy_entries[@]}"; do
+        prefix="${proxy_entries[$key]}"
+        config_entry="{\"type\": \"http-forward\", \"backend\": \"127.0.0.1:${port}\", \"host\": \"*\", \"uri_prefix\": \"${prefix}\"}"
+        echo "Adding proxy entry with: ${config_entry}"
+        ${app_management_dir}/scripts/add_proxy_entry "${key}" "${config_entry}"
+    done
+    # The proxyAgent ignores successive file change events for ~50ms, so wait a bit, then poke the config file
+    # to ensure all previous changes took effect.
+    sleep 0.200
+    touch ${app_management_dir}/bin/proxy.config
+}
+
+# Only allow 1 copy of this script to run at a time
+scriptfile=$0
+exec 200<$scriptfile
+flock -n 200
+acquired_lock=$?
+if [ $acquired_lock -ne 0 ]; then
+    echo Already running $scriptfile.
+    exit 0
+fi
+
+if inspector_builtin $bp_dir/vendor/node; then
+
+    port=$(${app_management_dir}/utils/handler_utils.sh 'inspector' 'port' 9229)
+    echo "Warning: You will need a SSH tunnel for port $port to be able to use the Chrome DevTools with Node.js versions 6.3.0 and up." 1>&2
+
+else
+
+    # Check if inspector is already running
+    if ${app_management_dir}/handlers/query-inspector/run; then
+        pid=$(cat ${pidfile})
+        echo "Already running inspector (PID: $pid)."
+        exit 0
+    fi
+
+    pushd ${handler_dir} &>/dev/null
+    if ! ../install-inspector/run; then
+        exit 1
+    fi
+
+    # Force rebuild of node-inspector
+    installed_node="$($bp_dir/vendor/node/bin/node -v)"
+    expected_node=$(cat $handler_dir/node_modules/.node_version)
+    if [[ "$installed_node" != "$expected_node" ]]; then
+        echo "Reinstalling native module 'node-inspector'..."
+        ( rm -rf $handler_dir/node_modules/* && cd $handler_dir/node_modules && npm install node-inspector 2>/dev/null )
+    fi
+
+    echo Starting utility: inspector...
+    node="$bp_dir/vendor/node/bin/node"
+    cd $handler_dir
+    port=$(${app_management_dir}/utils/handler_utils.sh 'inspector' 'port' 8790)
+    debugport=$(${app_management_dir}/utils/handler_utils.sh 'inspector' 'debugport' 5858)
+    $node server.js "${proxy_entries['inspector']}" $port $debugport &
+    pid=$!
+    echo "${pid}" > ${pidfile}
+
+    add_proxy_entries
+
+fi
+
+# Sleep needed for error messages to show up when things crash
+sleep 0.5
+

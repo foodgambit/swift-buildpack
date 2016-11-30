@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# IBM SDK for Node.js Buildpack
+# Copyright 2015 the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Stops the health center handler and a Mosquitto broker that was started by the HealthCenter 
+# Usage:
+#   stop-hc/run
+#
+
+app_management_dir="$(cd `dirname $0`/../.. && pwd)"
+
+################################################################################################
+# Remove the healthcenter properties that was created by the HealthCenter handler and restore the 
+# properties file if one had existed.
+################################################################################################
+function restore_hc_properties {
+  # IMPORTANT - Ensure that these values match the ones in stop-hc/run
+  hc_properties=healthcenter.properties
+  backup_dir="$app_management_dir/handlers/$handler/backup"
+
+
+  backup_file="$backup_dir/$hc_properties"
+  app_file="$app_management_dir/../$hc_properties"
+
+  # restore the backup copy if one exists otherwise delete the app's copy that was created by our handler
+  if [ -e "$backup_file" ]; then
+    mv "$backup_file" "$app_file"
+
+    # if the backup directory is empty, delete it as well
+    if [ -z "$(ls -A "$backup_dir")" ]; then
+      rmdir "$backup_dir"
+    fi 
+  else
+    # user may have deleted the healthcenter properties during a debug session. check that it exists before deleting
+    if [ -e "$app_file" ]; then
+      rm "$app_file"
+    fi 
+  fi
+}
+
+handler=start-hc
+pidfile="$app_management_dir/handlers/$handler/healthcenter.pid" # must be the same as start-hc/run
+key=hc
+
+echo Removing Health Center configuration created by the app management handler
+
+# kill mosquitto, which has its pid stored with healthcenter pid file
+pid=$(cat ${pidfile})
+kill -9 ${pid}
+rm "${pidfile}"
+
+# Restore application healthcenter properties
+restore_hc_properties
+
+# remove proxy agent handler
+"${app_management_dir}/scripts/remove_proxy_entry" "${key}"
+
+# Indicate that handler has been removed
+rm -f ${handler}/.hc

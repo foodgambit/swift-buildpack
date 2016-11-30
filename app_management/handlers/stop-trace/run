@@ -1,6 +1,8 @@
+
+#!/usr/bin/env ruby
 # Encoding: utf-8
 # IBM SDK for Node.js Buildpack
-# Copyright 2014-2015 the original author or authors.
+# Copyright 2015 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,28 +16,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-class BootScriptFinder
-  def initialize(app_dir)
-    @app_dir = app_dir
-  end
-
-  def find_boot_script
-    procfile_file = @app_dir + 'Procfile'
-    start_cmd = ""
-
-    if (File.exist?(procfile_file))
-      procfile_content = ''
-      File.open(procfile_file,'r') do |file|
-        while line = file.gets
-          procfile_content += line
-        end
-      end
-      if (matched = /web:\s+(.+)/.match(procfile_content))
-        start_cmd = matched[1]
-      end
-    end
-
-    return start_cmd
-  end
-
+# Copy original bootscript to application if RMU is enabled
+bootscript = ENV['BOOT_SCRIPT']
+if (File.exists?("#{app_dir}/#{bootscript}.orig"))
+  # Replace backup with original start script
+  FileUtils.remove_file("#{app_dir}/#{bootscript}")
+  File.rename("#{app_dir}/#{bootscript}.orig", "#{app_dir}/#{bootscript}")
 end
