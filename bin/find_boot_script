@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+# 
+
+$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
+
+require 'boot_script_finder'
+
+begin
+  build_dir = ARGV[0]
+  build_dir += '/' if build_dir[-1] != '/'
+  puts BootScriptFinder.new(build_dir).find_boot_script
+rescue => e
+  puts ""
+end

@@ -68,7 +68,7 @@ verify_fips () {
 }
 
 install_app_management() {
-  #Install App Management
+  # Install App Management
   if ! [[ ${BLUEMIX_APP_MGMT_INSTALL,,} == "false" ]]; then
     if ! [[ ${INSTALL_BLUEMIX_APP_MGMT,,} == "false" ]]; then
       header "Installing App Management"
