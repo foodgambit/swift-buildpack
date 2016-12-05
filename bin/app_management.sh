@@ -211,6 +211,7 @@ function installAppManagement() {
 
     # Install Dev mode utilities
     installAgent && setupHandlerBinaries && updateStartCommands && generateAppMgmtInfo
+    status "installAppManagement end"
   fi
 }
 
