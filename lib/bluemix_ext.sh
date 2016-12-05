@@ -74,6 +74,8 @@ install_app_management() {
       status "Installing App Management"
       source $BP_DIR/bin/app_management.sh
       status "Installed App Management???????????"
+      # We may have to tweak the different handlers... see the handlers for node and liberty and compare them
+      # we may need a subset of all of these handlers for an MVP...
     fi
   fi
 }
