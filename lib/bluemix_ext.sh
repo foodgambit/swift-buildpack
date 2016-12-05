@@ -73,6 +73,7 @@ install_app_management() {
     if ! [[ ${INSTALL_BLUEMIX_APP_MGMT,,} == "false" ]]; then
       status "Installing App Management"
       source $BP_DIR/bin/app_management.sh
+      status "Installed App Management???????????"
     fi
   fi
 }

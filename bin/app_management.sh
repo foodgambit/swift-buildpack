@@ -15,6 +15,7 @@
 # limitations under the License.
 
 function installAgent() {
+  status "installAgent 1"
   mkdir $BUILD_DIR/.app-management
   mkdir $BUILD_DIR/.app-management/scripts
   mkdir $BUILD_DIR/.app-management/utils
@@ -32,11 +33,14 @@ function installAgent() {
   cp -r $BP_DIR/app_management/mosquitto/* $BUILD_DIR/.app-management/mosquitto
   cp $BP_DIR/app_management/env.json $BUILD_DIR/.app-management
 
+  status "installAgent 2"
+
   chmod +x $BUILD_DIR/.app-management/bin/proxyAgent
   chmod +x $BUILD_DIR/.app-management/scripts/*
   chmod +x $BUILD_DIR/.app-management/utils/*
   chmod -R +x $BUILD_DIR/.app-management/handlers/
   chmod +x $BUILD_DIR/vendor/initial_startup.rb
+  status "installAgent end"
 }
 
 function getOpts(){
