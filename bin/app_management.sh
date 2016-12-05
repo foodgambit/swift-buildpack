@@ -29,6 +29,10 @@ function installAgent() {
   cp $BP_DIR/app_management/utils/* $BUILD_DIR/.app-management/utils
   cp -ra $BP_DIR/app_management/handlers/* $BUILD_DIR/.app-management/handlers
   # Note: $BUILD_DIR/.app-management/handlers/ will be pruned by setupHandlerBinaries() below
+  # vendor folder seems to be a node.js thing... that is even deprecated not for node.js...
+  # see following link: http://stackoverflow.com/questions/5178334/folder-structure-for-a-node-js-project
+  # also, the liberty buildpack has its own initial_startup.rb file tool
+  # see ./resources/liberty/initial_startup.rb
   cp $BP_DIR/app_management/initial_startup.rb $BUILD_DIR/vendor
   cp -r $BP_DIR/app_management/mosquitto/* $BUILD_DIR/.app-management/mosquitto
   cp $BP_DIR/app_management/env.json $BUILD_DIR/.app-management
