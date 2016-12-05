@@ -76,6 +76,7 @@ install_app_management() {
       status "Installed App Management???????????"
       # We may have to tweak the different handlers... see the handlers for node and liberty and compare them
       # we may need a subset of all of these handlers for an MVP...
+      # for instance, see the start-debug handler in the libery buildpack (it requires proxy)
     fi
   fi
 }
