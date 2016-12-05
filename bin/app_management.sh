@@ -33,6 +33,7 @@ function installAgent() {
   # see following link: http://stackoverflow.com/questions/5178334/folder-structure-for-a-node-js-project
   # also, the liberty buildpack has its own initial_startup.rb file tool
   # see ./resources/liberty/initial_startup.rb
+  # the initial_startup.rb file seems to be used only for updating the start command??
   cp $BP_DIR/app_management/initial_startup.rb $BUILD_DIR/vendor
   cp -r $BP_DIR/app_management/mosquitto/* $BUILD_DIR/.app-management/mosquitto
   cp $BP_DIR/app_management/env.json $BUILD_DIR/.app-management
