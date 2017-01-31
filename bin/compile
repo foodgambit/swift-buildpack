@@ -127,7 +127,9 @@ mkdir -p $CACHE_DIR
 cd $CACHE_DIR
 
 # Copy over included dependencies
-cp -Rv $BUILD_DIR/dependencies/* $CACHE_DIR
+if [ -d "$BUILD_DIR/dependencies" ]; then
+  cp -Rv $BUILD_DIR/dependencies/* $CACHE_DIR
+fi
 
 # Download and unpack Swift binaries
 download_dependency $SWIFT_NAME_VERSION $SWIFT_VERSION "tar.gz" "swift-$DEFAULT_SWIFT_VERSION"
