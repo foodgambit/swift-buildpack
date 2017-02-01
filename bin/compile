@@ -126,6 +126,7 @@ TEMP_CACHE_DIR="/var/cache"
 
 mkdir -p $CACHE_DIR
 mkdir -p $TEMP_CACHE_DIR
+chmod 777 $TEMP_CACHE_DIR # Terrible
 cd $CACHE_DIR
 
 # Copy over included dependencies if any
