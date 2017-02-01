@@ -122,11 +122,10 @@ fi
 SWIFT_VERSION="$(get_swift_version)"
 SWIFT_NAME_VERSION="swift-${SWIFT_VERSION}"
 CLANG_NAME_VERSION="clang-${CLANG_VERSION}"
-TEMP_CACHE_DIR="/var/cache"
+TEMP_CACHE_DIR="/usr/local/cache"
 
 mkdir -p $CACHE_DIR
 mkdir -p $TEMP_CACHE_DIR
-chmod 777 $TEMP_CACHE_DIR # Terrible
 cd $CACHE_DIR
 
 # Copy over included dependencies if any
