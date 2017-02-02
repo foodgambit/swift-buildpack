@@ -132,7 +132,7 @@ if [ -d "$BUILD_DIR/dependencies" ]; then
 fi
 
 # Download any dependencies if any
-cat $BUILD_DIR/external_dependencies.txt | awk '{ cmd = "curl -k -L \047" $1 "\047 -o " ENVIRON["CACHE_DIR"] "/"$3; system(cmd)  }'
+cat $BUILD_DIR/external_dependencies.txt | awk -v cache_dir="$CACHE_DIR" '{ cmd = "curl -k -L \047" $1 "\047 -o " cache_dir "/"$3; system(cmd)  }'
 
 # Download and unpack Swift binaries
 download_dependency $SWIFT_NAME_VERSION $SWIFT_VERSION "tar.gz" "swift-$DEFAULT_SWIFT_VERSION"
